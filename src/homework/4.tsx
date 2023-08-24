@@ -1,3 +1,4 @@
+
 import React, { createContext, useMemo, useState, useContext } from "react";
 import noop from "lodash/noop";
 
@@ -5,20 +6,22 @@ type MenuIds = "first" | "second" | "last";
 type Menu = { id: MenuIds; title: string };
 
 // Додати тип Menu Selected
-
 type SelectedMenu = {
   id: MenuIds;
 };
 
-type MenuAction = {
-  onSelectedMenu: (selected: SelectedMenu) => void;
+type MenuSelected = {
+  selectedMenu: SelectedMenu;
 };
 
-const MenuSelectedContext = createContext<SelectedMenu>({
-  id: "first", // Початкове значення
+const MenuSelectedContext = createContext<MenuSelected>({
+  selectedMenu: { id: "first" },
 });
 
 // Додайте тип MenuAction
+type MenuAction = {
+  onSelectedMenu: (selected: SelectedMenu) => void;
+};
 
 const MenuActionContext = createContext<MenuAction>({
   onSelectedMenu: noop,
@@ -33,6 +36,7 @@ function MenuProvider({ children }: PropsProvider) {
   const [selectedMenu, setSelectedMenu] = useState<SelectedMenu>({
     id: "first",
   });
+
   const menuContextAction = useMemo(
     () => ({
       onSelectedMenu: setSelectedMenu,
@@ -40,7 +44,12 @@ function MenuProvider({ children }: PropsProvider) {
     []
   );
 
-  const menuContextSelected = useMemo(() => selectedMenu, [selectedMenu]);
+  const menuContextSelected = useMemo(
+    () => ({
+      selectedMenu,
+    }),
+    [selectedMenu]
+  );
 
   return (
     <MenuActionContext.Provider value={menuContextAction}>
@@ -57,7 +66,8 @@ type PropsMenu = {
 
 function MenuComponent({ menus }: PropsMenu) {
   const { onSelectedMenu } = useContext(MenuActionContext);
-  const selectedMenu = useContext(MenuSelectedContext);
+  const { selectedMenu } = useContext(MenuSelectedContext);
+
   return (
     <>
       {menus.map((menu) => (
